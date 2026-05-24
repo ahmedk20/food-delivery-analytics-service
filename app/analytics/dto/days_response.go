@@ -1,0 +1,25 @@
+package dto
+
+import "github.com/quickbite/analytics-service/app/analytics"
+
+type RestaurantDayDTO struct {
+	Date          string `json:"date"`
+	OrdersCount   int    `json:"ordersCount"`
+	RevenueMinor  int64  `json:"revenueMinor"`
+	Currency      string `json:"currency"`
+	AvgOrderMinor int64  `json:"avgOrderMinor"`
+}
+
+func ToRestaurantDayDTOs(rows []analytics.RestaurantDayResponse) []RestaurantDayDTO {
+	dtos := make([]RestaurantDayDTO, len(rows))
+	for i, row := range rows {
+		dtos[i] = RestaurantDayDTO{
+			Date:          row.Date,
+			OrdersCount:   row.OrdersCount,
+			RevenueMinor:  row.RevenueMinor,
+			Currency:      row.Currency,
+			AvgOrderMinor: row.AvgOrderMinor,
+		}
+	}
+	return dtos
+}
