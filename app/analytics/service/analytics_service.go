@@ -13,11 +13,24 @@ type AnalyticsService struct {
 	restaurantDayRepo *repository.RestaurantDayRepo
 	branchDayRepo     *repository.BranchDayRepo
 	platformDayRepo   *repository.PlatformDayRepo
+	productDayRepo    *repository.ProductDayRepo
 	log               *slog.Logger
 }
 
-func NewAnalyticsService(restaurantDayRepo *repository.RestaurantDayRepo, branchDayRepo *repository.BranchDayRepo, platformDayRepo *repository.PlatformDayRepo, log *slog.Logger) *AnalyticsService {
-	return &AnalyticsService{restaurantDayRepo: restaurantDayRepo, branchDayRepo: branchDayRepo, platformDayRepo: platformDayRepo, log: log}
+func NewAnalyticsService(
+	restaurantDayRepo *repository.RestaurantDayRepo,
+	branchDayRepo *repository.BranchDayRepo,
+	platformDayRepo *repository.PlatformDayRepo,
+	productDayRepo *repository.ProductDayRepo,
+	log *slog.Logger,
+) *AnalyticsService {
+	return &AnalyticsService{
+		restaurantDayRepo: restaurantDayRepo,
+		branchDayRepo:     branchDayRepo,
+		platformDayRepo:   platformDayRepo,
+		productDayRepo:    productDayRepo,
+		log:               log,
+	}
 }
 
 func parseEventDate(raw string) string {
@@ -45,7 +58,18 @@ func (s *AnalyticsService) HandleOrderPlaced(ctx context.Context, input analytic
 	if err := s.branchDayRepo.Upsert(ctx, input.BranchID, date, currency, int64(input.TotalAmount)); err != nil {
 		return err
 	}
-	return s.platformDayRepo.Upsert(ctx, date, currency, int64(input.TotalAmount))
+	if err := s.platformDayRepo.Upsert(ctx, date, currency, int64(input.TotalAmount)); err != nil {
+		return err
+	}
+	for _, item := range input.Items {
+		if item.ProductID <= 0 || item.Quantity <= 0 {
+			continue
+		}
+		if err := s.productDayRepo.Upsert(ctx, item.ProductID, input.RestaurantID, date, item.Quantity); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (s *AnalyticsService) HandleOrderDelivered(ctx context.Context, input analytics.OnOrderDeliveredInput) error {
@@ -76,6 +100,32 @@ func (s *AnalyticsService) HandleOrderCancelled(ctx context.Context, input analy
 		return err
 	}
 	return s.platformDayRepo.DecrOrder(ctx, date)
+}
+
+func (s *AnalyticsService) GetProductDays(
+	ctx context.Context,
+	restaurantID int,
+	dateRange analytics.DateRange,
+) ([]analytics.ProductDayResponse, error) {
+	if dateRange.From > dateRange.To {
+		return nil, analytics.ErrInvalidDateRange
+	}
+
+	rows, err := s.productDayRepo.FindByRestaurantAndRange(ctx, restaurantID, dateRange.From, dateRange.To)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]analytics.ProductDayResponse, len(rows))
+	for i, row := range rows {
+		result[i] = analytics.ProductDayResponse{
+			ProductID:    row.ProductID,
+			Date:         row.Date,
+			OrdersCount:  row.OrdersCount,
+			QuantitySold: row.QuantitySold,
+		}
+	}
+	return result, nil
 }
 
 func (s *AnalyticsService) GetRestaurantDays(

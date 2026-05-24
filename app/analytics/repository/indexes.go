@@ -67,6 +67,23 @@ func EnsureIndexes(ctx context.Context, db *mongo.Database, log *slog.Logger) er
 	}
 	log.Info("indexes ensured", "collection", analytics.CollectionAggPlatformDay)
 
+	productColl := db.Collection(analytics.CollectionAggProductDay)
+	productIndexes := []mongo.IndexModel{
+		{
+			Keys:    bson.D{{Key: "product_id", Value: 1}, {Key: "restaurant_id", Value: 1}, {Key: "date", Value: 1}},
+			Options: options.Index().SetUnique(true).SetName("uq_product_restaurant_date"),
+		},
+		{
+			Keys:    bson.D{{Key: "restaurant_id", Value: 1}, {Key: "date", Value: 1}},
+			Options: options.Index().SetName("idx_restaurant_date"),
+		},
+	}
+
+	if _, err := productColl.Indexes().CreateMany(ctx, productIndexes); err != nil {
+		return err
+	}
+	log.Info("indexes ensured", "collection", analytics.CollectionAggProductDay)
+
 	eventColl := db.Collection(analytics.CollectionEventIDs)
 	ttlSeconds := int32(7 * 24 * 60 * 60)
 	eventIndexes := []mongo.IndexModel{

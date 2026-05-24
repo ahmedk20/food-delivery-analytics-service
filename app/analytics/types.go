@@ -2,16 +2,22 @@ package analytics
 
 import "time"
 
+type OrderItem struct {
+	ProductID int `json:"productId"`
+	Quantity  int `json:"quantity"`
+}
+
 type OnOrderPlacedInput struct {
-	OrderID      int    `json:"orderId"`
-	RestaurantID int    `json:"restaurantId"`
-	BranchID     int    `json:"branchId"`
-	CustomerID   int    `json:"customerId"`
-	TotalAmount  int    `json:"totalAmount"`
-	ItemsCount   int    `json:"itemsCount"`
-	Currency     string `json:"currency"`
-	Region       string `json:"region"`
-	PlacedAt     string `json:"placedAt"`
+	OrderID      int         `json:"orderId"`
+	RestaurantID int         `json:"restaurantId"`
+	BranchID     int         `json:"branchId"`
+	CustomerID   int         `json:"customerId"`
+	TotalAmount  int         `json:"totalAmount"`
+	ItemsCount   int         `json:"itemsCount"`
+	Currency     string      `json:"currency"`
+	Region       string      `json:"region"`
+	PlacedAt     string      `json:"placedAt"`
+	Items        []OrderItem `json:"items"`
 }
 
 type RestaurantDayRow struct {
@@ -82,6 +88,13 @@ type OnOrderCancelledInput struct {
 	RestaurantID int    `json:"restaurantId"`
 	BranchID     int    `json:"branchId"`
 	CancelledAt  string `json:"cancelledAt"`
+}
+
+type ProductDayResponse struct {
+	ProductID    int    `json:"productId"`
+	Date         string `json:"date"`
+	OrdersCount  int    `json:"ordersCount"`
+	QuantitySold int    `json:"quantitySold"`
 }
 
 type DateRange struct {
