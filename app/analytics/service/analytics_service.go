@@ -11,11 +11,12 @@ import (
 
 type AnalyticsService struct {
 	restaurantDayRepo *repository.RestaurantDayRepo
+	branchDayRepo     *repository.BranchDayRepo
 	log               *slog.Logger
 }
 
-func NewAnalyticsService(repo *repository.RestaurantDayRepo, log *slog.Logger) *AnalyticsService {
-	return &AnalyticsService{restaurantDayRepo: repo, log: log}
+func NewAnalyticsService(restaurantDayRepo *repository.RestaurantDayRepo, branchDayRepo *repository.BranchDayRepo, log *slog.Logger) *AnalyticsService {
+	return &AnalyticsService{restaurantDayRepo: restaurantDayRepo, branchDayRepo: branchDayRepo, log: log}
 }
 
 func (s *AnalyticsService) HandleOrderPlaced(ctx context.Context, input analytics.OnOrderPlacedInput) error {
@@ -36,7 +37,10 @@ func (s *AnalyticsService) HandleOrderPlaced(ctx context.Context, input analytic
 		currency = "EGP"
 	}
 
-	return s.restaurantDayRepo.Upsert(ctx, input.RestaurantID, date, currency, int64(input.TotalAmount))
+	if err := s.restaurantDayRepo.Upsert(ctx, input.RestaurantID, date, currency, int64(input.TotalAmount)); err != nil {
+		return err
+	}
+	return s.branchDayRepo.Upsert(ctx, input.BranchID, date, currency, int64(input.TotalAmount))
 }
 
 func (s *AnalyticsService) GetRestaurantDays(

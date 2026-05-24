@@ -33,6 +33,23 @@ func EnsureIndexes(ctx context.Context, db *mongo.Database, log *slog.Logger) er
 	}
 	log.Info("indexes ensured", "collection", analytics.CollectionAggRestaurantDay)
 
+	branchColl := db.Collection(analytics.CollectionAggBranchDay)
+	branchIndexes := []mongo.IndexModel{
+		{
+			Keys:    bson.D{{Key: "branch_id", Value: 1}, {Key: "date", Value: 1}},
+			Options: options.Index().SetUnique(true).SetName("uq_branch_date"),
+		},
+		{
+			Keys:    bson.D{{Key: "date", Value: 1}, {Key: "branch_id", Value: 1}},
+			Options: options.Index().SetName("idx_date_branch"),
+		},
+	}
+
+	if _, err := branchColl.Indexes().CreateMany(ctx, branchIndexes); err != nil {
+		return err
+	}
+	log.Info("indexes ensured", "collection", analytics.CollectionAggBranchDay)
+
 	eventColl := db.Collection(analytics.CollectionEventIDs)
 	ttlSeconds := int32(7 * 24 * 60 * 60)
 	eventIndexes := []mongo.IndexModel{
