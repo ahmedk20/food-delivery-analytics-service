@@ -23,3 +23,25 @@ func ToRestaurantDayDTOs(rows []analytics.RestaurantDayResponse) []RestaurantDay
 	}
 	return dtos
 }
+
+type PlatformDayDTO struct {
+	Date          string `json:"date"`
+	OrdersCount   int    `json:"ordersCount"`
+	RevenueMinor  int64  `json:"revenueMinor"`
+	Currency      string `json:"currency"`
+	AvgOrderMinor int64  `json:"avgOrderMinor"`
+}
+
+func ToPlatformDayDTOs(rows []analytics.PlatformDayResponse) []PlatformDayDTO {
+	dtos := make([]PlatformDayDTO, len(rows))
+	for i, row := range rows {
+		dtos[i] = PlatformDayDTO{
+			Date:          row.Date,
+			OrdersCount:   row.OrdersCount,
+			RevenueMinor:  row.RevenueMinor,
+			Currency:      row.Currency,
+			AvgOrderMinor: row.AvgOrderMinor,
+		}
+	}
+	return dtos
+}

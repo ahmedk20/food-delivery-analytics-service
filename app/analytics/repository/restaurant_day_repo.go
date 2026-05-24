@@ -57,6 +57,26 @@ func (r *RestaurantDayRepo) IncrDelivery(ctx context.Context, restaurantID int, 
 	return err
 }
 
+func (r *RestaurantDayRepo) IncrRevenue(ctx context.Context, restaurantID int, date string, amount int64) error {
+	filter := bson.M{"restaurant_id": restaurantID, "date": date}
+	update := bson.M{
+		"$inc": bson.M{"revenue_sum": amount},
+		"$set": bson.M{"updated_at": time.Now().UTC()},
+	}
+	_, err := r.coll.UpdateOne(ctx, filter, update)
+	return err
+}
+
+func (r *RestaurantDayRepo) DecrOrder(ctx context.Context, restaurantID int, date string) error {
+	filter := bson.M{"restaurant_id": restaurantID, "date": date}
+	update := bson.M{
+		"$inc": bson.M{"orders_count": -1},
+		"$set": bson.M{"updated_at": time.Now().UTC()},
+	}
+	_, err := r.coll.UpdateOne(ctx, filter, update)
+	return err
+}
+
 func (r *RestaurantDayRepo) FindByRestaurantAndRange(
 	ctx context.Context,
 	restaurantID int,

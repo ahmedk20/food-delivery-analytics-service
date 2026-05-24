@@ -13,5 +13,7 @@ func RegisterRoutes(r chi.Router, ctrl *AnalyticsController, pc *rbac.Permission
 	r.Route("/api/v1/analytics", func(r chi.Router) {
 		r.With(rbac.Require(pc, analytics.PermAnalyticsRead)).
 			Get("/restaurants/{restaurantId}/days", apperr.Wrap(log, ctrl.GetRestaurantDays))
+		r.With(rbac.Require(pc, analytics.PermAnalyticsRead)).
+			Get("/platform/days", apperr.Wrap(log, ctrl.GetPlatformDays))
 	})
 }

@@ -66,6 +66,7 @@ func Run() error {
 	// ── Repositories ────────────────────────────────────────────────────────
 	restaurantDayRepo := repository.NewRestaurantDayRepo(db)
 	branchDayRepo := repository.NewBranchDayRepo(db)
+	platformDayRepo := repository.NewPlatformDayRepo(db)
 	eventIDsRepo := repository.NewEventIDsRepo(db)
 
 	// ── Core client + RBAC cache ────────────────────────────────────────────
@@ -73,7 +74,7 @@ func Run() error {
 	permCache := rbac.NewPermissionCache(coreClient, time.Duration(cfg.RBACCacheTTLSec)*time.Second)
 
 	// ── Service ─────────────────────────────────────────────────────────────
-	analyticsSvc := service.NewAnalyticsService(restaurantDayRepo, branchDayRepo, log)
+	analyticsSvc := service.NewAnalyticsService(restaurantDayRepo, branchDayRepo, platformDayRepo, log)
 
 	// ── Event consumer ──────────────────────────────────────────────────────
 	consumer := coreevents.NewConsumer(broker, eventIDsRepo, log)

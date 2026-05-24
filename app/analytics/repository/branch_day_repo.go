@@ -57,6 +57,26 @@ func (r *BranchDayRepo) IncrDelivery(ctx context.Context, branchID int, date str
 	return err
 }
 
+func (r *BranchDayRepo) IncrRevenue(ctx context.Context, branchID int, date string, amount int64) error {
+	filter := bson.M{"branch_id": branchID, "date": date}
+	update := bson.M{
+		"$inc": bson.M{"revenue_sum": amount},
+		"$set": bson.M{"updated_at": time.Now().UTC()},
+	}
+	_, err := r.coll.UpdateOne(ctx, filter, update)
+	return err
+}
+
+func (r *BranchDayRepo) DecrOrder(ctx context.Context, branchID int, date string) error {
+	filter := bson.M{"branch_id": branchID, "date": date}
+	update := bson.M{
+		"$inc": bson.M{"orders_count": -1},
+		"$set": bson.M{"updated_at": time.Now().UTC()},
+	}
+	_, err := r.coll.UpdateOne(ctx, filter, update)
+	return err
+}
+
 func (r *BranchDayRepo) FindByBranchAndRange(
 	ctx context.Context,
 	branchID int,

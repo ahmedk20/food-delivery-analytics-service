@@ -50,6 +50,23 @@ func EnsureIndexes(ctx context.Context, db *mongo.Database, log *slog.Logger) er
 	}
 	log.Info("indexes ensured", "collection", analytics.CollectionAggBranchDay)
 
+	platformColl := db.Collection(analytics.CollectionAggPlatformDay)
+	platformIndexes := []mongo.IndexModel{
+		{
+			Keys:    bson.D{{Key: "date", Value: 1}, {Key: "currency", Value: 1}},
+			Options: options.Index().SetUnique(true).SetName("uq_platform_date_currency"),
+		},
+		{
+			Keys:    bson.D{{Key: "date", Value: 1}},
+			Options: options.Index().SetName("idx_platform_date"),
+		},
+	}
+
+	if _, err := platformColl.Indexes().CreateMany(ctx, platformIndexes); err != nil {
+		return err
+	}
+	log.Info("indexes ensured", "collection", analytics.CollectionAggPlatformDay)
+
 	eventColl := db.Collection(analytics.CollectionEventIDs)
 	ttlSeconds := int32(7 * 24 * 60 * 60)
 	eventIndexes := []mongo.IndexModel{

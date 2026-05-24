@@ -12,6 +12,8 @@ import (
 func Register(consumer *coreevents.Consumer, svc *service.AnalyticsService) {
 	consumer.Register("order.placed", handleOrderPlaced(svc))
 	consumer.Register("order.delivered", handleOrderDelivered(svc))
+	consumer.Register("payment.succeeded", handlePaymentSucceeded(svc))
+	consumer.Register("order.cancelled", handleOrderCancelled(svc))
 }
 
 func handleOrderPlaced(svc *service.AnalyticsService) coreevents.EventHandler {
@@ -31,5 +33,25 @@ func handleOrderDelivered(svc *service.AnalyticsService) coreevents.EventHandler
 			return err
 		}
 		return svc.HandleOrderDelivered(ctx, input)
+	}
+}
+
+func handlePaymentSucceeded(svc *service.AnalyticsService) coreevents.EventHandler {
+	return func(ctx context.Context, payload json.RawMessage) error {
+		var input analytics.OnPaymentSucceededInput
+		if err := json.Unmarshal(payload, &input); err != nil {
+			return err
+		}
+		return svc.HandlePaymentSucceeded(ctx, input)
+	}
+}
+
+func handleOrderCancelled(svc *service.AnalyticsService) coreevents.EventHandler {
+	return func(ctx context.Context, payload json.RawMessage) error {
+		var input analytics.OnOrderCancelledInput
+		if err := json.Unmarshal(payload, &input); err != nil {
+			return err
+		}
+		return svc.HandleOrderCancelled(ctx, input)
 	}
 }

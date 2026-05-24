@@ -34,3 +34,21 @@ func (c *AnalyticsController) GetRestaurantDays(w http.ResponseWriter, r *http.R
 	apphttp.SendSuccess(w, http.StatusOK, dto.ToRestaurantDayDTOs(rows))
 	return nil
 }
+
+func (c *AnalyticsController) GetPlatformDays(w http.ResponseWriter, r *http.Request) error {
+	req, err := dto.ParseGetPlatformDaysRequest(r)
+	if err != nil {
+		return err
+	}
+
+	rows, err := c.svc.GetPlatformDays(r.Context(), analytics.DateRange{
+		From: req.From,
+		To:   req.To,
+	})
+	if err != nil {
+		return err
+	}
+
+	apphttp.SendSuccess(w, http.StatusOK, dto.ToPlatformDayDTOs(rows))
+	return nil
+}

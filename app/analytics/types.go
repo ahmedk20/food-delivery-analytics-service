@@ -60,6 +60,30 @@ type OnOrderDeliveredInput struct {
 	DeliveredAt        string `json:"deliveredAt"`
 }
 
+type PlatformDayResponse struct {
+	Date          string `json:"date"`
+	OrdersCount   int    `json:"ordersCount"`
+	RevenueMinor  int64  `json:"revenueMinor"`
+	Currency      string `json:"currency"`
+	AvgOrderMinor int64  `json:"avgOrderMinor"`
+}
+
+type OnPaymentSucceededInput struct {
+	OrderID      int    `json:"orderId"`
+	RestaurantID int    `json:"restaurantId"`
+	BranchID     int    `json:"branchId"`
+	Amount       int64  `json:"amount"`
+	Currency     string `json:"currency"`
+	PaidAt       string `json:"paidAt"`
+}
+
+type OnOrderCancelledInput struct {
+	OrderID      int    `json:"orderId"`
+	RestaurantID int    `json:"restaurantId"`
+	BranchID     int    `json:"branchId"`
+	CancelledAt  string `json:"cancelledAt"`
+}
+
 type DateRange struct {
 	From string
 	To   string
