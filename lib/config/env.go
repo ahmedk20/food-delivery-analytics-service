@@ -24,6 +24,9 @@ type Config struct {
 	RabbitMQDLQ      string `env:"RABBITMQ_DLQ" envDefault:"analytics-service.order-events.dead"`
 	RabbitMQPrefetch int    `env:"RABBITMQ_PREFETCH" envDefault:"10"`
 
+	CoreEventsExchange string `env:"RABBITMQ_CORE_EVENTS_EXCHANGE" envDefault:"core-service.events"`
+	CoreEventsQueue    string `env:"RABBITMQ_CORE_EVENTS_QUEUE" envDefault:"analytics-service.core-events"`
+
 	AccessSecret string `env:"ACCESS_SECRET,required"`
 
 	CoreServiceURL    string `env:"CORE_SERVICE_URL" envDefault:"http://localhost:3000"`

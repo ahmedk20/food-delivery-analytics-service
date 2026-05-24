@@ -52,6 +52,14 @@ type BranchDayResponse struct {
 	AvgOrderMinor int64  `json:"avgOrderMinor"`
 }
 
+type OnOrderDeliveredInput struct {
+	OrderID            int    `json:"orderId"`
+	RestaurantID       int    `json:"restaurantId"`
+	BranchID           int    `json:"branchId"`
+	DeliveryDurationMs int64  `json:"deliveryDurationMs"`
+	DeliveredAt        string `json:"deliveredAt"`
+}
+
 type DateRange struct {
 	From string
 	To   string

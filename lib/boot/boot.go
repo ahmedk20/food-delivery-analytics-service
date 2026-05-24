@@ -2,6 +2,7 @@ package boot
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -90,6 +91,40 @@ func Run() error {
 		return fmt.Errorf("start consumer: %w", err)
 	}
 	log.Info("event consumer started", "queue", cfg.RabbitMQQueue)
+
+	// ── Core-service event consumer (RBAC cache invalidation) ───────────────
+	coreBroker := mongopkg.NewAMQPBroker(cfg.RabbitMQURL, log)
+	if err := coreBroker.Connect(ctx); err != nil {
+		return fmt.Errorf("core-service rabbit connect: %w", err)
+	}
+	defer coreBroker.Close()
+
+	coreConsumerOpts := mongopkg.ConsumerOptions{
+		Exchange:    cfg.CoreEventsExchange,
+		Queue:       cfg.CoreEventsQueue,
+		BindingKeys: []string{"rbac.#"},
+		Prefetch:    1,
+	}
+	if err := coreBroker.Consume(ctx, coreConsumerOpts, func(ctx context.Context, msg mongopkg.Message) error {
+		var env coreevents.Envelope
+		if err := json.Unmarshal(msg.Body, &env); err != nil {
+			log.Warn("malformed core-service event, skipping", "error", err)
+			return msg.Ack()
+		}
+
+		var payload coreevents.RBACPermissionsChangedPayload
+		if err := json.Unmarshal(env.Payload, &payload); err != nil || payload.RoleName == "" {
+			log.Warn("malformed rbac payload, skipping", "routing_key", msg.RoutingKey)
+			return msg.Ack()
+		}
+
+		permCache.Invalidate(payload.RoleName)
+		log.Info("rbac cache invalidated via event", "role", payload.RoleName)
+		return msg.Ack()
+	}); err != nil {
+		return fmt.Errorf("start core-events consumer: %w", err)
+	}
+	log.Info("core-events consumer started", "queue", cfg.CoreEventsQueue)
 
 	// ── HTTP ────────────────────────────────────────────────────────────────
 	analyticsCtrl := controller.NewAnalyticsController(analyticsSvc)

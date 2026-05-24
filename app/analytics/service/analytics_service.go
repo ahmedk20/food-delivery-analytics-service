@@ -43,6 +43,25 @@ func (s *AnalyticsService) HandleOrderPlaced(ctx context.Context, input analytic
 	return s.branchDayRepo.Upsert(ctx, input.BranchID, date, currency, int64(input.TotalAmount))
 }
 
+func (s *AnalyticsService) HandleOrderDelivered(ctx context.Context, input analytics.OnOrderDeliveredInput) error {
+	date := input.DeliveredAt
+	if date == "" {
+		date = time.Now().UTC().Format("2006-01-02")
+	} else {
+		t, err := time.Parse(time.RFC3339, date)
+		if err != nil {
+			date = time.Now().UTC().Format("2006-01-02")
+		} else {
+			date = t.UTC().Format("2006-01-02")
+		}
+	}
+
+	if err := s.restaurantDayRepo.IncrDelivery(ctx, input.RestaurantID, date, input.DeliveryDurationMs); err != nil {
+		return err
+	}
+	return s.branchDayRepo.IncrDelivery(ctx, input.BranchID, date, input.DeliveryDurationMs)
+}
+
 func (s *AnalyticsService) GetRestaurantDays(
 	ctx context.Context,
 	restaurantID int,

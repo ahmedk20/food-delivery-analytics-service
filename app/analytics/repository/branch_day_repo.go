@@ -44,6 +44,19 @@ func (r *BranchDayRepo) Upsert(ctx context.Context, branchID int, date, currency
 	return err
 }
 
+func (r *BranchDayRepo) IncrDelivery(ctx context.Context, branchID int, date string, deliveryMs int64) error {
+	filter := bson.M{"branch_id": branchID, "date": date}
+	update := bson.M{
+		"$inc": bson.M{
+			"delivery_ms_sum":   deliveryMs,
+			"delivery_ms_count": 1,
+		},
+		"$set": bson.M{"updated_at": time.Now().UTC()},
+	}
+	_, err := r.coll.UpdateOne(ctx, filter, update)
+	return err
+}
+
 func (r *BranchDayRepo) FindByBranchAndRange(
 	ctx context.Context,
 	branchID int,

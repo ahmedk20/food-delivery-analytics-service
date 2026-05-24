@@ -7,3 +7,7 @@ type Envelope struct {
 	EventType string          `json:"event_type"`
 	Payload   json.RawMessage `json:"payload"`
 }
+
+type RBACPermissionsChangedPayload struct {
+	RoleName string `json:"role_name"`
+}
