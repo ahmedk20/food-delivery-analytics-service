@@ -14,6 +14,8 @@ func RegisterRoutes(r chi.Router, ctrl *AnalyticsController, pc *rbac.Permission
 		r.With(rbac.Require(pc, analytics.PermAnalyticsRead)).
 			Get("/restaurants/{restaurantId}/days", apperr.Wrap(log, ctrl.GetRestaurantDays))
 		r.With(rbac.Require(pc, analytics.PermAnalyticsRead)).
+			Get("/restaurants/{restaurantId}/branches/{branchId}/days", apperr.Wrap(log, ctrl.GetBranchDays))
+		r.With(rbac.Require(pc, analytics.PermAnalyticsRead)).
 			Get("/restaurants/{restaurantId}/products/days", apperr.Wrap(log, ctrl.GetProductDays))
 		r.With(rbac.Require(pc, analytics.PermAnalyticsRead)).
 			Get("/platform/days", apperr.Wrap(log, ctrl.GetPlatformDays))

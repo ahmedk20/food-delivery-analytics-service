@@ -10,6 +10,28 @@ type RestaurantDayDTO struct {
 	AvgOrderMinor int64  `json:"avgOrderMinor"`
 }
 
+type BranchDayDTO struct {
+	Date          string `json:"date"`
+	OrdersCount   int    `json:"ordersCount"`
+	RevenueMinor  int64  `json:"revenueMinor"`
+	Currency      string `json:"currency"`
+	AvgOrderMinor int64  `json:"avgOrderMinor"`
+}
+
+func ToBranchDayDTOs(rows []analytics.BranchDayResponse) []BranchDayDTO {
+	dtos := make([]BranchDayDTO, len(rows))
+	for i, row := range rows {
+		dtos[i] = BranchDayDTO{
+			Date:          row.Date,
+			OrdersCount:   row.OrdersCount,
+			RevenueMinor:  row.RevenueMinor,
+			Currency:      row.Currency,
+			AvgOrderMinor: row.AvgOrderMinor,
+		}
+	}
+	return dtos
+}
+
 func ToRestaurantDayDTOs(rows []analytics.RestaurantDayResponse) []RestaurantDayDTO {
 	dtos := make([]RestaurantDayDTO, len(rows))
 	for i, row := range rows {

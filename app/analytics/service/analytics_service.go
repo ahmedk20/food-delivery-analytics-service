@@ -128,6 +128,38 @@ func (s *AnalyticsService) GetProductDays(
 	return result, nil
 }
 
+func (s *AnalyticsService) GetBranchDays(
+	ctx context.Context,
+	branchID int,
+	dateRange analytics.DateRange,
+) ([]analytics.BranchDayResponse, error) {
+	if dateRange.From > dateRange.To {
+		return nil, analytics.ErrInvalidDateRange
+	}
+
+	rows, err := s.branchDayRepo.FindByBranchAndRange(ctx, branchID, dateRange.From, dateRange.To)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]analytics.BranchDayResponse, len(rows))
+	for i, row := range rows {
+		var avgOrder int64
+		if row.OrdersCount > 0 {
+			avgOrder = row.RevenueSum / int64(row.OrdersCount)
+		}
+		result[i] = analytics.BranchDayResponse{
+			Date:          row.Date,
+			OrdersCount:   row.OrdersCount,
+			RevenueMinor:  row.RevenueSum,
+			Currency:      row.Currency,
+			AvgOrderMinor: avgOrder,
+		}
+	}
+
+	return result, nil
+}
+
 func (s *AnalyticsService) GetRestaurantDays(
 	ctx context.Context,
 	restaurantID int,
