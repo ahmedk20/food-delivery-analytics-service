@@ -1,0 +1,59 @@
+services:
+  analytics-service:
+    build: .
+    ports:
+      - "3002:3002"
+    environment:
+      APP_STAGE: dev
+      HOST: "0.0.0.0"
+      PORT: "3002"
+      MONGO_URI: "mongodb://mongo:27017"
+      MONGO_DATABASE: analytics_service
+      RABBITMQ_URL: "amqp://guest:guest@rabbitmq:5672"
+      RABBITMQ_ORDER_EVENTS_EXCHANGE: order-service.events
+      RABBITMQ_QUEUE: analytics-service.order-events
+      RABBITMQ_DLX: analytics-service.order-events.dlx
+      RABBITMQ_DLQ: analytics-service.order-events.dead
+      RABBITMQ_PREFETCH: "10"
+      RABBITMQ_CORE_EVENTS_EXCHANGE: core-service.events
+      RABBITMQ_CORE_EVENTS_QUEUE: analytics-service.core-events
+      ACCESS_SECRET: "dev-secret-change-me"
+      CORE_SERVICE_URL: "http://host.docker.internal:3000"
+      CORE_SERVICE_API_KEY: internal-api-key
+      RBAC_CACHE_TTL_SEC: "300"
+      EVENT_DEDUP_TTL_DAYS: "7"
+    depends_on:
+      mongo:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"  # management UI
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mongo-data:
+  rabbitmq-data:

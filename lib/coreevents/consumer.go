@@ -69,6 +69,7 @@ func (c *Consumer) Start(ctx context.Context, opts messaging.ConsumerOptions) er
 			return err
 		}
 
+		c.log.Info("event processed", "routing_key", msg.RoutingKey, "event_id", eventID)
 		return msg.Ack()
 	})
 }

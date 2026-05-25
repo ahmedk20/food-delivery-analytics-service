@@ -1,0 +1,170 @@
+{
+  "info": {
+    "name": "QuickBite — Analytics Service",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      { "key": "token", "value": "{{token}}", "type": "string" }
+    ]
+  },
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Analytics",
+      "item": [
+        {
+          "name": "Get Restaurant Days",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/analytics/restaurants/{{restaurant_id}}/days?from={{from}}&to={{to}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "analytics", "restaurants", "{{restaurant_id}}", "days"],
+              "query": [
+                { "key": "from", "value": "{{from}}" },
+                { "key": "to",   "value": "{{to}}"   }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Branch Days",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/analytics/restaurants/{{restaurant_id}}/branches/{{branch_id}}/days?from={{from}}&to={{to}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "analytics", "restaurants", "{{restaurant_id}}", "branches", "{{branch_id}}", "days"],
+              "query": [
+                { "key": "from", "value": "{{from}}" },
+                { "key": "to",   "value": "{{to}}"   }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Product Days",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/analytics/restaurants/{{restaurant_id}}/products/days?from={{from}}&to={{to}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "analytics", "restaurants", "{{restaurant_id}}", "products", "days"],
+              "query": [
+                { "key": "from", "value": "{{from}}" },
+                { "key": "to",   "value": "{{to}}"   }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Platform Days",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/analytics/platform/days?from={{from}}&to={{to}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "analytics", "platform", "days"],
+              "query": [
+                { "key": "from", "value": "{{from}}" },
+                { "key": "to",   "value": "{{to}}"   }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Validation Errors",
+      "item": [
+        {
+          "name": "Missing 'from' param",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/analytics/restaurants/{{restaurant_id}}/days?to={{to}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "analytics", "restaurants", "{{restaurant_id}}", "days"],
+              "query": [
+                { "key": "to", "value": "{{to}}" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Invalid date format",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/analytics/restaurants/{{restaurant_id}}/days?from=not-a-date&to={{to}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "analytics", "restaurants", "{{restaurant_id}}", "days"],
+              "query": [
+                { "key": "from", "value": "not-a-date" },
+                { "key": "to",   "value": "{{to}}"     }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Invalid restaurant ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/analytics/restaurants/abc/days?from={{from}}&to={{to}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "analytics", "restaurants", "abc", "days"],
+              "query": [
+                { "key": "from", "value": "{{from}}" },
+                { "key": "to",   "value": "{{to}}"   }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "No token (401)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/analytics/platform/days?from={{from}}&to={{to}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "analytics", "platform", "days"],
+              "query": [
+                { "key": "from", "value": "{{from}}" },
+                { "key": "to",   "value": "{{to}}"   }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
