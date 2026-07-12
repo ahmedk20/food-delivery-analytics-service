@@ -1,0 +1,64 @@
+# CI for analytics-service (Go). Runs on every push/PR to main.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Job 1: compile everything and run go vet (static analysis).
+  # The Go equivalent of core/order's "build & type-check" job.
+  # ---------------------------------------------------------------------------
+  build:
+    name: Build & Vet
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Installs Go and caches the module + build cache. `go-version-file`
+      # reads the version straight from go.mod so CI never drifts from local.
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      # `go build ./...` compiles every package; fails on any compile error.
+      - name: Build
+        run: go build ./...
+
+      # `go vet` catches suspicious constructs the compiler allows
+      # (bad printf verbs, unreachable code, lock-by-value, etc).
+      - name: Vet
+        run: go vet ./...
+
+  # ---------------------------------------------------------------------------
+  # Job 2: run the integration tests.
+  #
+  # No `services:` block here: the tests use testcontainers-go, which starts
+  # its OWN mongo:7 and rabbitmq:3 containers from inside the test code. That
+  # just needs a Docker daemon on the runner — ubuntu-latest ships one. core
+  # (RBAC) is mocked in-process, so nothing else is required.
+  # ---------------------------------------------------------------------------
+  test:
+    name: Tests (integration, testcontainers)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      # go test compiles + runs every package's tests. testcontainers pulls
+      # mongo:7 / rabbitmq:3 on first use, so this job is a bit slower (~30s).
+      - name: Test
+        run: go test ./...
